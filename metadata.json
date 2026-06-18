@@ -1,0 +1,6 @@
+{
+  "name": "Velar",
+  "description": "A luxury real estate landing page featuring custom layouts, typography, and interactive animations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
