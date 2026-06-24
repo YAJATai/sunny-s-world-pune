@@ -3,7 +3,7 @@ import { X, MapPin, Phone, Mail } from 'lucide-react';
 
 const FULL_TEXT = "Sunny's World.";
 const HERO_IMG = 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920&q=85';
-const ABOUT_IMG = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=85';
+const SCROLL_IMG = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=85';
 
 const SERVICES = [
   {
@@ -72,10 +72,24 @@ export default function App() {
   const [lifting, setLifting] = useState(false);
   const [showText, setShowText] = useState(false);
   const [preloaderHidden, setPreloaderHidden] = useState(false);
-  const [navDark, setNavDark] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const aboutRef = useRef<HTMLElement>(null);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [navOnDark, setNavOnDark] = useState(false);
 
+  const heroRef = useRef<HTMLElement>(null);
+  const section5Ref = useRef<HTMLElement>(null);
+  const section6Ref = useRef<HTMLElement>(null);
+  const scrollImgRef = useRef<HTMLImageElement>(null);
+
+  const [imgTransform, setImgTransform] = useState({
+    progress: 0,
+    currentX: 0,
+    currentY: 0,
+    currentScale: 1,
+    baseW: 1400,
+  });
+
+  // Preloader
   useEffect(() => {
     const timers: number[] = [];
     for (let i = 0; i <= FULL_TEXT.length; i++) {
@@ -89,16 +103,81 @@ export default function App() {
     return () => timers.forEach(clearTimeout);
   }, []);
 
+  // Scroll-driven image animation
   useEffect(() => {
-    const handleScroll = () => {
-      const rect = aboutRef.current?.getBoundingClientRect();
-      setNavDark(rect ? rect.top <= 0 && rect.bottom > 0 : false);
+    if (preloaderHidden) {
+      const handleScroll = () => {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        const heroEl = heroRef.current;
+        const darkEl = section5Ref.current;
+        const imgEl = scrollImgRef.current;
+
+        if (heroEl && darkEl && imgEl) {
+          const heroRect = heroEl.getBoundingClientRect();
+          const darkRect = darkEl.getBoundingClientRect();
+          const heroH = heroEl.offsetHeight;
+          const imgH = imgEl.offsetHeight;
+
+          const baseW = Math.max(vw, 1400);
+          const triggerPoint = -(heroH * 0.30);
+          const endPoint = heroRect.top - (darkRect.bottom - vh);
+
+          let progress = 0;
+          if (endPoint !== triggerPoint) {
+            progress = (heroRect.top - triggerPoint) / (endPoint - triggerPoint);
+          }
+          progress = Math.min(Math.max(progress, 0), 1);
+
+          const smoothstep = (x: number) => x * x * (3 - 2 * x);
+          const t = smoothstep(smoothstep(progress));
+
+          const startX = (vw - baseW) / 2;
+          const startY = vh - imgH;
+
+          const finalScale = 1.45;
+          const finalX = (vw - baseW * finalScale) / 2;
+          const mobileOffset = vw < 1024 ? -250 : 4;
+          const finalY = darkRect.bottom - imgH * finalScale + 500 + mobileOffset;
+
+          setImgTransform({
+            progress,
+            currentX: startX + (finalX - startX) * t,
+            currentY: startY + (finalY - startY) * t,
+            currentScale: 1 + (finalScale - 1) * t,
+            baseW,
+          });
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      window.addEventListener('resize', handleScroll, { passive: true });
+      handleScroll();
+
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', handleScroll);
+      };
+    }
+  }, [preloaderHidden, imgLoaded]);
+
+  // Nav color on scroll
+  useEffect(() => {
+    const handleNavScroll = () => {
+      const s5 = section5Ref.current?.getBoundingClientRect();
+      const s6 = section6Ref.current?.getBoundingClientRect();
+      const isDark5 = s5 ? s5.top <= 0 && s5.bottom > 0 : false;
+      const isDark6 = s6 ? s6.top <= 0 && s6.bottom > 0 : false;
+      setNavOnDark(isDark5 || isDark6);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleNavScroll, { passive: true });
+    handleNavScroll();
+    return () => window.removeEventListener('scroll', handleNavScroll);
   }, []);
 
-  const navColor = navDark ? '#ffffff' : '#213138';
+  const navColor = navOnDark ? '#ffffff' : '#213138';
   const NAV = ['Resort', 'Wedding', 'Corporate', 'Adventure', 'Contact'];
 
   return (
@@ -108,32 +187,48 @@ export default function App() {
         body { background-color: #f5f0ea; font-family: 'Inter', sans-serif; overflow-x: clip; margin: 0; }
         @keyframes blink { from, to { opacity: 1; } 50% { opacity: 0; } }
         .cb { animation: blink 0.7s step-end infinite; }
+
         @media (max-width: 639px) {
-          .hero-sub-desktop { display: none !important; }
-          .hero-sub-mobile { display: block !important; }
-          .hero-pt { padding-top: 100px !important; }
-          .hero-sm { font-size: 8vw !important; }
-          .hero-lg { font-size: 15vw !important; white-space: normal !important; }
+          .hero-sub-dt { display: none !important; }
+          .hero-sub-mb { display: block !important; }
+          .hero-pt { padding-top: 90px !important; }
+          .hero-top { justify-content: flex-start !important; }
+          .hero-sm { font-size: 7.5vw !important; }
+          .hero-lg { font-size: 14.5vw !important; white-space: normal !important; word-break: break-word !important; line-height: 0.9 !important; }
         }
         @media (min-width: 640px) and (max-width: 1023px) {
-          .hero-sub-desktop { display: none !important; }
-          .hero-sub-mobile { display: block !important; }
-          .hero-pt { padding-top: 120px !important; }
+          .hero-sub-dt { display: none !important; }
+          .hero-sub-mb { display: block !important; }
+          .hero-pt { padding-top: 110px !important; }
+          .hero-top { justify-content: flex-start !important; }
           .hero-sm { font-size: 5.5vw !important; }
-          .hero-lg { font-size: 11vw !important; white-space: normal !important; }
+          .hero-lg { font-size: 11vw !important; white-space: normal !important; word-break: break-word !important; line-height: 0.9 !important; }
         }
         @media (min-width: 1024px) {
-          .hero-sub-desktop { display: block !important; }
-          .hero-sub-mobile { display: none !important; }
+          .hero-sub-dt { display: block !important; }
+          .hero-sub-mb { display: none !important; }
           .hero-pt { padding-top: calc(28vh - 50px) !important; }
           .hero-sm { font-size: 3vw !important; }
-          .hero-lg { font-size: clamp(56px, 7vw, 130px) !important; white-space: nowrap !important; }
+          .hero-lg { font-size: clamp(52px, 6.5vw, 9vw) !important; white-space: nowrap !important; line-height: 0.88 !important; }
         }
+
+        @media (max-width: 767px) {
+          .s2-sw, .s2-sr { padding-left: 0 !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .s2-sw, .s2-sr { padding-left: 15% !important; }
+          .s2-sec { min-height: 70vh !important; height: auto !important; }
+        }
+        @media (min-width: 1024px) {
+          .s2-sw, .s2-sr { padding-left: 25% !important; }
+        }
+
         .inp { width: 100%; padding: 12px 16px; background: transparent; border: 1px solid rgba(33,49,56,0.2); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; color: #213138; outline: none; transition: border-color 0.3s; }
         .inp:focus { border-color: #213138; }
         .inp::placeholder { color: rgba(33,49,56,0.4); }
       `}</style>
 
+      {/* Preloader */}
       {!preloaderHidden && (
         <div className="fixed inset-0 flex items-center justify-center bg-[#213138] z-[100] select-none"
           style={{
@@ -155,11 +250,11 @@ export default function App() {
         <a href="#" className="font-['Syne'] text-xl tracking-tight leading-none" style={{ color: navColor, transition: 'color 0.35s' }}>
           <span className="font-bold">Sunny's</span><span className="font-black"> World</span>
         </a>
-        <button onClick={() => setMenuOpen(!menuOpen)}
+        <button onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="relative w-8 h-8 flex flex-col justify-center items-end gap-1.5 focus:outline-none group z-[51] cursor-pointer"
-          aria-label={menuOpen ? 'Close Menu' : 'Open Menu'}
+          aria-label={isMenuOpen ? 'Close Menu' : 'Open Menu'}
         >
-          {menuOpen ? <X size={24} style={{ color: '#213138' }} /> : (
+          {isMenuOpen ? <X size={24} style={{ color: '#213138' }} /> : (
             <>
               <span className="h-[1.5px] w-[28px] group-hover:w-[20px]" style={{ backgroundColor: navColor, transition: 'background-color 0.35s, width 0.3s' }} />
               <span className="h-[1.5px] w-[28px]" style={{ backgroundColor: navColor, transition: 'background-color 0.35s' }} />
@@ -168,11 +263,11 @@ export default function App() {
         </button>
       </nav>
 
-      {menuOpen && (
+      {isMenuOpen && (
         <div className="fixed inset-0 bg-[#f5f0ea] z-40 flex flex-col justify-center items-center">
           <div className="flex flex-col items-center gap-8 md:gap-10">
             {NAV.map(l => (
-              <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setMenuOpen(false)}
+              <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setIsMenuOpen(false)}
                 className="font-light tracking-[0.2em] text-4xl uppercase text-[#213138] hover:text-gray-500 transition-colors duration-300 font-['Syne']"
               >{l}</a>
             ))}
@@ -181,22 +276,22 @@ export default function App() {
       )}
 
       {/* Hero */}
-      <section className="relative min-h-screen bg-cover bg-center bg-no-repeat flex flex-col justify-start"
+      <section ref={heroRef} className="relative min-h-screen overflow-visible bg-cover bg-center bg-no-repeat flex flex-col justify-start"
         style={{ backgroundImage: `url('${HERO_IMG}')` }}
       >
-        <div className="absolute inset-0 bg-black/35 z-0" />
-        <div className="hero-pt w-full z-10 select-none"
+        <div className="absolute inset-0 bg-black/30 z-0" />
+        <div className="hero-pt w-full z-10 transition-all select-none"
           style={{
             opacity: showText ? 1 : 0,
             transform: showText ? 'translateY(0)' : 'translateY(-28px)',
             transition: 'opacity 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s, transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s',
           }}
         >
-          <div className="px-6 md:px-10 lg:px-16 flex items-end justify-between mb-[-0.04em]">
+          <div className="hero-top px-6 md:px-10 lg:px-16 flex items-end justify-between mb-[-0.04em]">
             <h1 className="hero-sm font-['Syne'] font-[800] uppercase text-white tracking-[-0.03em] leading-none">
               BEST RESORT IN PUNE
             </h1>
-            <p className="hero-sub-desktop text-right font-['Syne'] font-bold text-white/80 max-w-[280px] leading-[1.6] mb-[0.2em] tracking-[0.02em]">
+            <p className="hero-sub-dt text-right font-['Syne'] font-bold text-white/80 max-w-[300px] leading-[1.6] mb-[0.2em] tracking-[0.02em]">
               Weddings, Corporate Events,<br />Adventure &amp; Luxury Stays
             </p>
           </div>
@@ -205,50 +300,84 @@ export default function App() {
               A PERFECT DESTINATION
             </h1>
           </div>
-          <div className="hero-sub-mobile px-6 font-['Syne'] font-semibold text-white/80 mt-[0.9em]">
+          <div className="hero-sub-mb px-6 font-['Syne'] font-semibold text-white/80 mt-[0.9em]">
             Weddings, corporate events,<br />adventure &amp; luxury stays.
           </div>
         </div>
       </section>
 
-      {/* About + Stats */}
-      <section ref={aboutRef} id="about" className="relative bg-[#1a1a1a] py-20 md:py-28">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
-          <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-            <div>
-              <h2 className="font-['Syne'] font-[800] text-[clamp(28px,3.5vw,48px)] text-white uppercase tracking-[-0.02em] leading-[1.1] mb-6">
-                A World of Its Own
-              </h2>
-              <p className="font-['Inter'] font-light text-[#e8e4df]/80 leading-relaxed text-[clamp(15px,1.1vw,18px)]">
-                Spread across 100 acres amidst nature, Sunny's World is a different world in itself.
-                From grand destination weddings to high-energy corporate events, thrilling adventure
-                sports to peaceful luxury stays — every experience is crafted with care.
-              </p>
-            </div>
-            <div className="rounded-xl overflow-hidden">
-              <img src={ABOUT_IMG} alt="Sunny's World Resort" className="w-full h-[300px] md:h-[400px] object-cover" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {[
-              { end: 10, suffix: 'k+', label: 'Restaurant Guests' },
-              { end: 50, suffix: 'k+', label: 'Adventure Visitors' },
-              { end: 100, suffix: '+', label: 'Weddings Hosted' },
-              { end: 500, suffix: '+', label: 'Corporate Events' },
-            ].map((s, i) => (
-              <div key={i} className="text-center border-r border-white/10 last:border-r-0">
-                <div className="font-['Inter'] font-light text-white text-[clamp(36px,4vw,64px)] leading-none">
-                  <CountUp end={s.end} suffix={s.suffix} />
-                </div>
-                <p className="font-['Inter'] font-normal text-white/50 text-sm mt-2">{s.label}</p>
-              </div>
-            ))}
-          </div>
+      {/* Scroll Image */}
+      <div id="scroll-img-wrap"
+        style={
+          preloaderHidden && imgTransform.progress > 0
+            ? {
+                position: 'fixed',
+                zIndex: 22,
+                pointerEvents: 'none',
+                top: 0,
+                left: 0,
+                transform: `translate(${imgTransform.currentX}px, ${imgTransform.currentY}px) scale(${imgTransform.currentScale})`,
+                transformOrigin: 'top left',
+                width: `${imgTransform.baseW}px`,
+                minWidth: '1400px',
+              }
+            : {
+                position: 'fixed',
+                zIndex: 22,
+                pointerEvents: 'none',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '100%',
+                minWidth: '1400px',
+              }
+        }
+      >
+        <div style={{
+          transform: preloaderHidden ? 'translateY(0)' : lifting ? 'translateY(0)' : 'translateY(102vh)',
+          transition: preloaderHidden ? 'none' : 'transform 1.5s cubic-bezier(0.45,0,0.15,1) 0.4s',
+        }}>
+          <img ref={scrollImgRef} src={SCROLL_IMG} alt="" aria-hidden="true"
+            className="w-full h-auto select-none pointer-events-none block"
+            onLoad={() => setImgLoaded(true)}
+          />
         </div>
-      </section>
+      </div>
+
+      {/* About + Stats (sticky, 200vh) */}
+      <div className="relative z-20" style={{ height: '200vh' }}>
+        <div className="h-[4vh] bg-[#1a1a1a]" />
+        <section ref={section5Ref} className="s2-sec sticky top-0 h-[100vh] bg-[#1a1a1a] overflow-hidden flex items-center">
+          <div className="w-full flex flex-col justify-between px-6 md:px-10 lg:px-16 pt-[clamp(30px,4vw,60px)] pb-[clamp(60px,8vw,120px)] max-w-[1200px] mx-auto select-none">
+            <div className="s2-sw w-full mb-6">
+              <h2 className="font-['Inter'] font-light text-[#e8e4df] tracking-[-0.02em] leading-[1.35] text-[clamp(22px,2.6vw,42px)]">
+                Spread across 100 acres amidst nature,<br />
+                Sunny's World is a different world in itself —<br />
+                created for weddings, corporate events,<br />
+                adventure sports, and luxury stays.
+              </h2>
+            </div>
+            <div className="s2-sr w-full flex flex-row items-stretch gap-4 mt-[clamp(48px,6vw,80px)]">
+              {[
+                { end: 10, suffix: 'k+', label: 'Restaurant Guests' },
+                { end: 50, suffix: 'k+', label: 'Adventure Visitors' },
+                { end: 100, suffix: '+', label: 'Weddings Hosted' },
+                { end: 500, suffix: '+', label: 'Corporate Events' },
+              ].map((s, i) => (
+                <div key={i} className={`flex-1 ${i < 3 ? 'border-r border-white/20' : ''} ${i > 0 ? 'pl-[clamp(20px,2.5vw,40px)]' : ''}`}>
+                  <div className="font-['Inter'] font-light text-white text-[clamp(36px,4.5vw,72px)] leading-none flex items-baseline">
+                    <CountUp end={s.end} suffix={s.suffix} />
+                  </div>
+                  <p className="font-['Inter'] font-normal text-white/60 text-[clamp(12px,1.1vw,16px)] mt-[clamp(4px,0.5vw,8px)] tracking-[0.01em]">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* Services */}
-      <section id="services" className="py-20 md:py-28 bg-[#f5f0ea]">
+      <section ref={section6Ref} id="services" className="relative z-30 bg-[#f5f0ea] py-20 md:py-28">
         <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
           <div className="text-center mb-14">
             <h2 className="font-['Syne'] font-[800] text-[clamp(28px,3.5vw,48px)] uppercase tracking-[-0.02em] leading-[1.1]">
@@ -260,7 +389,7 @@ export default function App() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {SERVICES.map((s, i) => (
-              <div key={i} className="group relative rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div key={i} className="group rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="h-52 overflow-hidden">
                   <img src={s.img} alt={s.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -277,7 +406,7 @@ export default function App() {
       </section>
 
       {/* Contact */}
-      <section id="contact" className="py-20 md:py-28 bg-[#f5f0ea] border-t border-[#213138]/10">
+      <section id="contact" className="relative z-30 py-20 md:py-28 bg-[#f5f0ea] border-t border-[#213138]/10">
         <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16">
             <div>
@@ -326,7 +455,7 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#1a1a1a] py-12">
+      <footer className="relative z-30 bg-[#1a1a1a] py-12">
         <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
