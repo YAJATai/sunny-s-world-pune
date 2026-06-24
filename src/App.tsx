@@ -71,6 +71,7 @@ export default function App() {
   const [hideCursor, setHideCursor] = useState(false);
   const [lifting, setLifting] = useState(false);
   const [showText, setShowText] = useState(false);
+  const [preloaderHidden, setPreloaderHidden] = useState(false);
   const [navDark, setNavDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const aboutRef = useRef<HTMLElement>(null);
@@ -84,7 +85,7 @@ export default function App() {
     timers.push(window.setTimeout(() => setHideCursor(true), LIFT_AT - 150));
     timers.push(window.setTimeout(() => setLifting(true), LIFT_AT));
     timers.push(window.setTimeout(() => setShowText(true), LIFT_AT + 1300));
-    timers.push(window.setTimeout(() => setLifting(false), LIFT_AT + 2100));
+    timers.push(window.setTimeout(() => setPreloaderHidden(true), LIFT_AT + 1500));
     return () => timers.forEach(clearTimeout);
   }, []);
 
@@ -133,20 +134,21 @@ export default function App() {
         .inp::placeholder { color: rgba(33,49,56,0.4); }
       `}</style>
 
-      {/* Preloader */}
-      <div className="fixed inset-0 flex items-center justify-center bg-[#213138] z-[100] select-none"
-        style={{
-          transform: lifting ? 'translateY(-100%)' : 'translateY(0%)',
-          transition: 'transform 1.5s cubic-bezier(0.45,0,0.15,1)',
-        }}
-      >
-        <div className="flex items-center text-white font-['Syne'] text-[2.6rem] tracking-[-0.02em]">
-          {FULL_TEXT.split('').map((c, i) =>
-            i < typed ? <span key={i} className={c === '.' ? 'font-black' : 'font-bold'}>{c}</span> : null
-          )}
-          {!hideCursor && <span className="inline-block w-[3px] h-[1.1em] rounded-sm bg-white ml-0.5 cb align-middle" />}
+      {!preloaderHidden && (
+        <div className="fixed inset-0 flex items-center justify-center bg-[#213138] z-[100] select-none"
+          style={{
+            transform: lifting ? 'translateY(-100%)' : 'translateY(0%)',
+            transition: 'transform 1.5s cubic-bezier(0.45,0,0.15,1)',
+          }}
+        >
+          <div className="flex items-center text-white font-['Syne'] text-[2.6rem] tracking-[-0.02em]">
+            {FULL_TEXT.split('').map((c, i) =>
+              i < typed ? <span key={i} className={c === '.' ? 'font-black' : 'font-bold'}>{c}</span> : null
+            )}
+            {!hideCursor && <span className="inline-block w-[3px] h-[1.1em] rounded-sm bg-white ml-0.5 cb align-middle" />}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 md:px-10 lg:px-16 py-5 md:py-6 flex justify-between items-center select-none">
