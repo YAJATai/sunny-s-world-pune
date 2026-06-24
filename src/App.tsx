@@ -1,21 +1,17 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, MapPin, Phone, Mail } from 'lucide-react';
 
-const FULL_TEXT = 'Velar.';
-const HOUSE_IMG = 'https://res.cloudinary.com/dsdhxhhqh/image/upload/v1780471903/building_bzziky.png';
-const BG_IMG = 'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260603_073200_7082add5-f1f8-4873-8696-d6f78a44089b.png&w=1920&q=85';
+const FULL_TEXT = "Sunny's World.";
+const RESORT_IMG = 'https://sunnysworldpune.com/wp-content/uploads/2022/06/Best-Wedding-Destination-in-India-1.png';
+const BG_IMG = 'https://sunnysworldpune.com/wp-content/uploads/2022/06/WEDDING-1024x1017.jpg';
 
-const GALLERY_VIDEOS = [
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260528_154759_4cdc8175-8261-497c-b688-9477c76545d4.mp4',
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260528_154751_39b1b9bb-2708-4211-b6a2-d39f93309e52.mp4',
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260528_154737_eba7900c-0313-483c-a30a-632c747ccc42.mp4',
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260602_144009_4348fe33-f885-4345-8e92-3fe1c2625d32.mp4',
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260602_145337_e44eaa8c-6bb1-4a6e-a70f-ed0231cbaccb.mp4'
+const GALLERY = [
+  { label: 'Wedding', img: 'https://sunnysworldpune.com/wp-content/uploads/2022/06/Best-Wedding-Destination-in-India-1.png' },
+  { label: 'Corporate', img: 'https://sunnysworldpune.com/wp-content/uploads/2022/06/Best-Destination-for-Corporate-Event-in-Pune.png' },
+  { label: 'Adventure', img: 'https://sunnysworldpune.com/wp-content/uploads/2022/06/Best-Adventure-Park-in-India-1.png' },
+  { label: 'Resort', img: 'https://sunnysworldpune.com/wp-content/uploads/2022/06/Sunnys-World-Adventure-Park.png' },
+  { label: 'Restaurant', img: 'https://sunnysworldpune.com/wp-content/uploads/2021/11/The-Ruby-Hilltop-Restaurant-The-Only-Hilltop-Restaurant-In-Pune-at-Sunnys-World-1-1024x576.jpg' },
+  { label: 'Sports', img: 'https://sunnysworldpune.com/wp-content/uploads/2022/06/Sunnys-World-Sports-Kingdom.png' },
 ];
 
 interface CountUpProps {
@@ -34,25 +30,24 @@ function CountUp({ end, suffix = '' }: CountUpProps) {
         const [entry] = entries;
         if (entry.isIntersecting && !animatedRef.current) {
           animatedRef.current = true;
-          
+
           let startTime: number | null = null;
           const duration = 2000;
-          
+
           const step = (timestamp: number) => {
             if (!startTime) startTime = timestamp;
             const elapsed = timestamp - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            
-            // Easing cubic out
+
             const eased = 1 - Math.pow(1 - progress, 3);
-            
+
             setValue(Math.round(eased * end));
-            
+
             if (progress < 1) {
               requestAnimationFrame(step);
             }
           };
-          
+
           requestAnimationFrame(step);
           observer.unobserve(entry.target);
         }
@@ -80,26 +75,22 @@ function CountUp({ end, suffix = '' }: CountUpProps) {
 }
 
 export default function App() {
-  // Preloader / Overlay States
   const [typedLength, setTypedLength] = useState(0);
   const [hideCursor, setHideCursor] = useState(false);
   const [lifting, setLifting] = useState(false);
   const [showHeroText, setShowHeroText] = useState(false);
   const [liftDone, setLiftDone] = useState(false);
 
-  // Navigation and Menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [navOnDark, setNavOnDark] = useState(false);
 
-  // References
   const heroRef = useRef<HTMLElement>(null);
   const section5Ref = useRef<HTMLElement>(null);
   const section6Ref = useRef<HTMLElement>(null);
-  const houseImgRef = useRef<HTMLImageElement>(null);
+  const resortImgRef = useRef<HTMLImageElement>(null);
 
-  // Scroll House Animation State
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [houseTransform, setHouseTransform] = useState({
+  const [resortTransform, setResortTransform] = useState({
     progress: 0,
     currentX: 0,
     currentY: 0,
@@ -107,9 +98,7 @@ export default function App() {
     baseW: 1400,
   });
 
-  // Preloader Setup
   useEffect(() => {
-    // Typewriter effect
     const typeTimers: number[] = [];
     for (let i = 0; i <= FULL_TEXT.length; i++) {
       const timer = window.setTimeout(() => {
@@ -118,24 +107,20 @@ export default function App() {
       typeTimers.push(timer);
     }
 
-    const LIFT_AT = 600 + 6 * 140 + 700; // 2140ms
+    const LIFT_AT = 600 + 11 * 140 + 700;
 
-    // Hide cursor at LIFT_AT - 150ms
     const cursorTimer = window.setTimeout(() => {
       setHideCursor(true);
     }, LIFT_AT - 150);
 
-    // Start lifting overlay at LIFT_AT
     const liftTimer = window.setTimeout(() => {
       setLifting(true);
     }, LIFT_AT);
 
-    // Fade in hero text at LIFT_AT + 1300ms
     const heroTextTimer = window.setTimeout(() => {
       setShowHeroText(true);
     }, LIFT_AT + 1300);
 
-    // Set liftDone true at LIFT_AT + 2100ms
     const liftDoneTimer = window.setTimeout(() => {
       setLiftDone(true);
     }, LIFT_AT + 2100);
@@ -149,7 +134,6 @@ export default function App() {
     };
   }, []);
 
-  // Update house position and scale on scroll/resize after liftDone is true
   useEffect(() => {
     if (!liftDone) return;
 
@@ -159,7 +143,7 @@ export default function App() {
 
       const heroElement = heroRef.current;
       const darkElement = section5Ref.current;
-      const imgElement = houseImgRef.current;
+      const imgElement = resortImgRef.current;
 
       if (heroElement && darkElement && imgElement) {
         const heroRect = heroElement.getBoundingClientRect();
@@ -178,7 +162,6 @@ export default function App() {
         }
         progress = Math.min(Math.max(progress, 0), 1);
 
-        // smoothstep applied twice
         const smoothstep = (x: number) => x * x * (3 - 2 * x);
         const t = smoothstep(smoothstep(progress));
 
@@ -194,7 +177,7 @@ export default function App() {
         const currentY = startY + (finalY - startY) * t;
         const currentScale = 1 + (finalScale - 1) * t;
 
-        setHouseTransform({
+        setResortTransform({
           progress,
           currentX,
           currentY,
@@ -207,7 +190,6 @@ export default function App() {
     window.addEventListener('scroll', handleScrollAndResize, { passive: true });
     window.addEventListener('resize', handleScrollAndResize, { passive: true });
 
-    // Call immediately to catch correct position
     handleScrollAndResize();
 
     return () => {
@@ -216,7 +198,6 @@ export default function App() {
     };
   }, [liftDone, imgLoaded]);
 
-  // Track scroll overlap of Dark Sections (Section 5 and Section 6) on Viewport Top to Color Navigation
   useEffect(() => {
     const handleNavScroll = () => {
       const s5 = section5Ref.current?.getBoundingClientRect();
@@ -229,19 +210,19 @@ export default function App() {
     };
 
     window.addEventListener('scroll', handleNavScroll, { passive: true });
-    handleNavScroll(); // Run initially
+    handleNavScroll();
 
     return () => {
       window.removeEventListener('scroll', handleNavScroll);
     };
   }, []);
 
-  // Determine active nav colors
   const navColor = navOnDark ? '#ffffff' : '#213138';
+
+  const NAV_LINKS = ['Resort', 'Wedding', 'Corporate', 'Adventure', 'Restaurant', 'Contact'];
 
   return (
     <div className="bg-[#f5f0ea] min-h-screen w-full overflow-x-clip relative font-['Inter'] antialiased text-[#213138]">
-      {/* Google Fonts and CSS Overrides Injection */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
 
@@ -271,7 +252,6 @@ export default function App() {
           animation: ticker-scroll 35s linear infinite;
         }
 
-        /* Desktop Gallery Accordion hover mechanism */
         @media (min-width: 1024px) {
           .gallery-expand-row:hover .gallery-expand-item {
             flex: 0.5 !important;
@@ -281,7 +261,6 @@ export default function App() {
           }
         }
 
-        /* Hero Responsive Type Sizes */
         @media (max-width: 639px) {
           .hero-subtitle-desktop { display: none !important; }
           .hero-subtitle-mobile  { display: block !important; }
@@ -306,7 +285,6 @@ export default function App() {
           .hero-extraordinary { font-size: clamp(52px, 6.5vw, 9vw) !important; white-space: nowrap !important; line-height: 0.88 !important; }
         }
 
-        /* Dark Section Tablet/Mobile rules */
         @media (max-width: 767px) {
           .s2-statement-wrapper, .s2-stats-row {
             padding-left: 0 !important;
@@ -327,7 +305,6 @@ export default function App() {
           }
         }
 
-        /* Gallery Responsive Rules (<=1023px) */
         @media (max-width: 1023px) {
           .s3-gallery-section { height: auto !important; min-height: 100vh !important; overflow: visible !important; }
           .s3-ticker-wrap { position: sticky !important; top: 0 !important; height: 100vh !important; width: 100% !important; margin-bottom: -100vh !important; }
@@ -342,9 +319,28 @@ export default function App() {
           .s3-gallery-content { padding: 60px 12px 48px !important; }
           .gallery-expand-row { gap: 6px !important; }
         }
+
+        .contact-input {
+          width: 100%;
+          padding: 12px 16px;
+          background: transparent;
+          border: 1px solid rgba(33, 49, 56, 0.2);
+          border-radius: 8px;
+          font-family: 'Inter', sans-serif;
+          font-size: 14px;
+          color: #213138;
+          outline: none;
+          transition: border-color 0.3s ease;
+        }
+        .contact-input:focus {
+          border-color: #213138;
+        }
+        .contact-input::placeholder {
+          color: rgba(33, 49, 56, 0.4);
+        }
       `}</style>
 
-      {/* SECTION 1 — Preloader / Intro Overlay */}
+      {/* SECTION 1 — Preloader */}
       <div
         id="preloader-overlay"
         className="fixed inset-0 flex items-center justify-center bg-[#213138] z-[100]"
@@ -372,25 +368,23 @@ export default function App() {
         </div>
       </div>
 
-      {/* SECTION 2 — Fixed Navigation */}
+      {/* SECTION 2 — Navigation */}
       <nav
         id="navbar"
         className="fixed top-0 left-0 right-0 z-50 px-6 md:px-10 lg:px-16 py-5 md:py-6 flex justify-between items-center select-none"
       >
-        {/* Left: Brand Wordmark */}
         <a
           href="#"
-          className="font-['Syne'] text-xl tracking-tight leading-none transition-colors duration-350"
+          className="font-['Syne'] text-xl tracking-tight leading-none"
           style={{
             color: navColor,
             transition: 'color 0.35s ease',
           }}
         >
-          <span className="font-bold">Velar</span>
-          <span className="font-black">.</span>
+          <span className="font-bold">Sunny's</span>
+          <span className="font-black"> World</span>
         </a>
 
-        {/* Right: Hamburger button with shrinking hover animation or Close button */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="relative w-8 h-8 flex flex-col justify-center items-end gap-1.5 focus:outline-none group z-[51] cursor-pointer"
@@ -400,7 +394,7 @@ export default function App() {
             <X
               size={24}
               style={{
-                color: '#213138', // Black overlay contrast
+                color: '#213138',
                 transition: 'color 0.35s ease',
               }}
             />
@@ -432,7 +426,7 @@ export default function App() {
           className="fixed inset-0 bg-[#f5f0ea] z-40 flex flex-col justify-center items-center"
         >
           <div className="flex flex-col items-center gap-8 md:gap-10">
-            {['Residences', 'Story', 'Listings', 'Inquire'].map((link) => (
+            {NAV_LINKS.map((link) => (
               <a
                 key={link}
                 href={`#${link.toLowerCase()}`}
@@ -455,7 +449,9 @@ export default function App() {
           backgroundImage: `url('${BG_IMG}')`,
         }}
       >
-        {/* Animated Hero Text Content */}
+        <div
+          className="absolute inset-0 bg-black/20 z-0"
+        />
         <div
           className="hero-text-block w-full z-10 transition-all select-none"
           style={{
@@ -464,37 +460,33 @@ export default function App() {
             transition: 'opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s',
           }}
         >
-          {/* Top heading row */}
           <div className="hero-heading-top px-6 md:px-10 lg:px-16 flex items-end justify-between mb-[-0.04em]">
-            <h1 className="hero-own-the font-['Syne'] font-[800] uppercase text-[#213138] tracking-[-0.03em] leading-none">
-              LIVE IN
+            <h1 className="hero-own-the font-['Syne'] font-[800] uppercase text-[#f5f0ea] tracking-[-0.03em] leading-none">
+              BEST RESORT IN PUNE
             </h1>
 
-            {/* Desktop only subtitle */}
-            <p className="hero-subtitle-desktop text-right font-['Syne'] font-bold text-[#213138] max-w-[300px] opacity-70 leading-[1.6] mb-[0.2em] tracking-[0.02em]">
-              Stately homes built with vision,<br />
-              scope, and architectural finesse.
+            <p className="hero-subtitle-desktop text-right font-['Syne'] font-bold text-[#f5f0ea] max-w-[300px] opacity-80 leading-[1.6] mb-[0.2em] tracking-[0.02em]">
+              Weddings, Corporate Events,<br />
+              Adventure & Luxury Stays.
             </p>
           </div>
 
-          {/* Headline row */}
           <div className="overflow-hidden">
-            <h1 className="hero-extraordinary font-['Syne'] font-[800] uppercase text-[#213138] tracking-[-0.03em] px-6 md:px-10 lg:px-16 leading-[0.88]">
-              IRREPLACEABLE
+            <h1 className="hero-extraordinary font-['Syne'] font-[800] uppercase text-[#f5f0ea] tracking-[-0.03em] px-6 md:px-10 lg:px-16 leading-[0.88]">
+              A PERFECT DESTINATION
             </h1>
           </div>
 
-          {/* Mobile/Tablet Subtitle */}
-          <div className="hero-subtitle-mobile px-6 font-['Syne'] font-semibold text-[#213138] opacity-65 mt-[0.9em]">
-            Premium real estate with vision,<br />
-            depth, and architectural clarity.
+          <div className="hero-subtitle-mobile px-6 font-['Syne'] font-semibold text-[#f5f0ea] opacity-80 mt-[0.9em]">
+            Best resort in Pune for weddings,<br />
+            corporate events &amp; adventure stays.
           </div>
         </div>
       </section>
 
-      {/* SECTION 4 — Scroll-Driven House Animation */}
+      {/* SECTION 4 — Scroll-Driven Resort Image Animation */}
       <div
-        id="house-fixed-container"
+        id="resort-fixed-container"
         style={
           !liftDone
             ? {
@@ -507,7 +499,7 @@ export default function App() {
                 width: '100%',
                 minWidth: '1400px',
               }
-            : houseTransform.progress <= 0
+            : resortTransform.progress <= 0
             ? {
                 position: 'fixed',
                 zIndex: 22,
@@ -524,15 +516,15 @@ export default function App() {
                 pointerEvents: 'none',
                 top: 0,
                 left: 0,
-                transform: `translate(${houseTransform.currentX}px, ${houseTransform.currentY}px) scale(${houseTransform.currentScale})`,
+                transform: `translate(${resortTransform.currentX}px, ${resortTransform.currentY}px) scale(${resortTransform.currentScale})`,
                 transformOrigin: 'top left',
-                width: `${houseTransform.baseW}px`,
+                width: `${resortTransform.baseW}px`,
                 minWidth: '1400px',
               }
         }
       >
         <div
-          id="house-inside-transition"
+          id="resort-inside-transition"
           style={
             !liftDone
               ? {
@@ -545,9 +537,9 @@ export default function App() {
           }
         >
           <img
-            ref={houseImgRef}
-            src={HOUSE_IMG}
-            alt="Velar Luxury Mansion Showcase"
+            ref={resortImgRef}
+            src={RESORT_IMG}
+            alt="Sunny's World Resort"
             aria-hidden="true"
             className="w-full h-auto select-none pointer-events-none block"
             onLoad={() => setImgLoaded(true)}
@@ -555,60 +547,62 @@ export default function App() {
         </div>
       </div>
 
-      {/* SECTION 5 — Dark Statement + Stats (sticky) */}
+      {/* SECTION 5 — Dark Statement + Stats */}
       <div
-        id="story"
+        id="about"
         className="relative z-20"
         style={{ height: '200vh' }}
       >
-        {/* Tiny 4vh #1a1a1a scroll spacer */}
         <div className="h-[4vh] bg-[#1a1a1a]" />
 
-        {/* Sticky section container */}
         <section
           ref={section5Ref}
           className="s2-section sticky top-0 h-[100vh] bg-[#1a1a1a] overflow-hidden flex items-center"
         >
           <div className="s2-content w-full flex flex-col justify-between px-6 md:px-10 lg:px-16 pt-[clamp(30px,4vw,60px)] pb-[clamp(60px,8vw,120px)] max-w-[1200px] mx-auto select-none">
-            {/* Statement Text Block */}
             <div className="s2-statement-wrapper w-full mb-6">
               <h2 className="s2-statement font-['Inter'] font-light text-[#e8e4df] tracking-[-0.02em] leading-[1.35] text-[clamp(22px,2.6vw,42px)]">
-                Every estate we present is hand-chosen<br />
-                through a frame of permanence, refinement,<br />
-                and timeless detail. Standards are not<br />
-                a flourish. It is our discipline.
+                Spread across 100 acres amidst nature,<br />
+                Sunny's World is a different world in itself —<br />
+                created for weddings, corporate events,<br />
+                adventure sports, and luxury stays.
               </h2>
             </div>
 
-            {/* Stats Row */}
             <div className="s2-stats-row w-full flex flex-row items-stretch gap-4 mt-[clamp(48px,6vw,80px)]">
-              {/* Stat Column 1 */}
               <div className="flex-1 border-r border-white/20 last:border-r-0">
                 <div className="font-['Inter'] font-light text-white text-[clamp(36px,4.5vw,72px)] leading-none flex items-baseline">
-                  <CountUp end={120} suffix="+" />
+                  <CountUp end={10} suffix="k+" />
                 </div>
                 <p className="font-['Inter'] font-normal text-white/60 text-[clamp(12px,1.1vw,16px)] mt-[clamp(4px,0.5vw,8px)] tracking-[0.01em]">
-                  Portfolio Holdings
+                  Restaurant Users
                 </p>
               </div>
 
-              {/* Stat Column 2 */}
               <div className="flex-1 border-r border-white/20 last:border-r-0 pl-[clamp(20px,2.5vw,40px)]">
                 <div className="font-['Inter'] font-light text-white text-[clamp(36px,4.5vw,72px)] leading-none flex items-baseline">
-                  <CountUp end={12} suffix="" />
+                  <CountUp end={50} suffix="k+" />
                 </div>
                 <p className="font-['Inter'] font-normal text-white/60 text-[clamp(12px,1.1vw,16px)] mt-[clamp(4px,0.5vw,8px)] tracking-[0.01em]">
-                  Global Locations
+                  Adventure Users
                 </p>
               </div>
 
-              {/* Stat Column 3 */}
               <div className="flex-1 border-r border-white/20 last:border-r-0 pl-[clamp(20px,2.5vw,40px)]">
                 <div className="font-['Inter'] font-light text-white text-[clamp(36px,4.5vw,72px)] leading-none flex items-baseline">
-                  <CountUp end={98} suffix="%" />
+                  <CountUp end={100} suffix="+" />
                 </div>
                 <p className="font-['Inter'] font-normal text-white/60 text-[clamp(12px,1.1vw,16px)] mt-[clamp(4px,0.5vw,8px)] tracking-[0.01em]">
-                  Patron Loyalty Rate
+                  Wedding Events
+                </p>
+              </div>
+
+              <div className="flex-1 pl-[clamp(20px,2.5vw,40px)]">
+                <div className="font-['Inter'] font-light text-white text-[clamp(36px,4.5vw,72px)] leading-none flex items-baseline">
+                  <CountUp end={500} suffix="+" />
+                </div>
+                <p className="font-['Inter'] font-normal text-white/60 text-[clamp(12px,1.1vw,16px)] mt-[clamp(4px,0.5vw,8px)] tracking-[0.01em]">
+                  Corporate Events
                 </p>
               </div>
             </div>
@@ -616,47 +610,155 @@ export default function App() {
         </section>
       </div>
 
-      {/* SECTION 6 — Hover-Expand Gallery (slides over Section 5) */}
+      {/* SECTION 6 — Gallery */}
       <section
-        id="residences"
+        id="services"
         ref={section6Ref}
         className="s3-gallery-section relative z-25 mt-[-100vh] bg-[#1a1a1a] h-[100vh] overflow-hidden"
       >
-        {/* Background Ticker */}
         <div className="s3-ticker-wrap absolute inset-0 flex items-center overflow-hidden z-0 pointer-events-none">
           <div className="ticker-track">
-            {/* Direct giant repeating string spans */}
             <span className="font-['Syne'] font-extrabold text-[clamp(100px,14vw,220px)] text-white/[0.03] tracking-tighter select-none whitespace-nowrap pr-[0.3em] uppercase">
-              Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;
+              Sunny's World.&nbsp;&nbsp;&nbsp;Sunny's World.&nbsp;&nbsp;&nbsp;Sunny's World.&nbsp;&nbsp;&nbsp;Sunny's World.&nbsp;&nbsp;&nbsp;
             </span>
             <span className="font-['Syne'] font-extrabold text-[clamp(100px,14vw,220px)] text-white/[0.03] tracking-tighter select-none whitespace-nowrap pr-[0.3em] uppercase">
-              Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;Velar.&nbsp;&nbsp;&nbsp;
+              Sunny's World.&nbsp;&nbsp;&nbsp;Sunny's World.&nbsp;&nbsp;&nbsp;Sunny's World.&nbsp;&nbsp;&nbsp;Sunny's World.&nbsp;&nbsp;&nbsp;
             </span>
           </div>
         </div>
 
-        {/* Gallery Content */}
         <div className="s3-gallery-content relative z-10 flex items-center justify-center w-full h-full p-[clamp(24px,4vw,60px)]">
           <div className="gallery-expand-row flex w-full h-[70vh] gap-1.5 max-w-[1200px] justify-center items-stretch">
-            {GALLERY_VIDEOS.map((videoUrl, idx) => (
+            {GALLERY.map((item, idx) => (
               <div
                 key={idx}
-                className="gallery-expand-item flex-[1_1_0%] h-full rounded-[12px] overflow-hidden cursor-pointer relative transition-all duration-500 ease-out"
+                className="gallery-expand-item flex-[1_1_0%] h-full rounded-[12px] overflow-hidden cursor-pointer relative transition-all duration-500 ease-out group"
               >
-                <video
-                  src={videoUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
+                <img
+                  src={item.img}
+                  alt={item.label}
                   className="w-full h-full object-cover select-none pointer-events-none block"
                 />
+                <div className="absolute inset-0 flex items-end p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="font-['Syne'] text-white text-lg font-bold tracking-wide uppercase">
+                    {item.label}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* SECTION 7 — Contact */}
+      <section
+        id="contact"
+        className="relative z-30 bg-[#f5f0ea] min-h-screen flex items-center py-20"
+      >
+        <div className="w-full max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
+          <div className="grid md:grid-cols-2 gap-12 md:gap-16">
+            {/* Left — Info */}
+            <div>
+              <h2 className="font-['Syne'] font-[800] text-[clamp(32px,4vw,56px)] uppercase tracking-[-0.03em] leading-[0.95] mb-6 text-[#213138]">
+                Get In<br />Touch
+              </h2>
+              <p className="font-['Inter'] text-[#213138]/70 leading-relaxed mb-8 max-w-md">
+                We would love to hear from you. Whether it's a wedding inquiry,
+                corporate event, or a weekend getaway — let's make it happen.
+              </p>
+
+              <div className="space-y-5">
+                <div className="flex items-start gap-3">
+                  <MapPin size={20} className="mt-0.5 shrink-0 text-[#213138]/60" />
+                  <p className="font-['Inter'] text-sm text-[#213138]/80 leading-relaxed">
+                    Sr. No. 217, Pashan Sus Rd, Near Mumbai-Pune Bypass,<br />
+                    Highway, Pune, Maharashtra 412115
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone size={20} className="shrink-0 text-[#213138]/60" />
+                  <a href="tel:+919667555555" className="font-['Inter'] text-sm text-[#213138]/80 hover:text-[#213138] transition-colors">
+                    +91-9667555555
+                  </a>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Mail size={20} className="shrink-0 text-[#213138]/60" />
+                  <a href="mailto:admin@sunnysworldpune.com" className="font-['Inter'] text-sm text-[#213138]/80 hover:text-[#213138] transition-colors">
+                    admin@sunnysworldpune.com
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Right — Form */}
+            <div>
+              <form className="space-y-4">
+                <input type="text" placeholder="Full Name" className="contact-input" />
+                <input type="text" placeholder="Company Name" className="contact-input" />
+                <input type="tel" placeholder="Mobile No" className="contact-input" />
+                <input type="email" placeholder="Email ID" className="contact-input" />
+                <select className="contact-input appearance-none">
+                  <option>Corporate Events</option>
+                  <option>Wedding</option>
+                  <option>Adventure Sports</option>
+                  <option>Restaurant</option>
+                  <option>Resort Stay</option>
+                </select>
+                <input type="date" placeholder="Booking Date" className="contact-input" defaultValue="2026-01-12" />
+                <input type="number" placeholder="Number of PAX" className="contact-input" defaultValue={100} />
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-[#213138] text-white font-['Syne'] font-bold text-sm tracking-[0.15em] uppercase rounded-lg hover:bg-[#2c434a] transition-colors duration-300 cursor-pointer"
+                >
+                  Submit
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 8 — Footer */}
+      <footer className="relative z-30 bg-[#1a1a1a] py-10">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-10 lg:px-16">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <h3 className="font-['Syne'] font-bold text-white text-lg mb-3">
+                Sunny's World
+              </h3>
+              <p className="font-['Inter'] text-white/50 text-sm leading-relaxed">
+                The Best and Luxurious Resort in Pune.<br />
+                Spread across 100 Acres Amidst Nature.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-['Syne'] font-semibold text-white/70 text-sm uppercase tracking-[0.15em] mb-3">Quick Links</h4>
+              <ul className="space-y-2">
+                {['Wedding', 'Corporate', 'Adventure Park', 'Resort', 'Restaurant', 'Contact'].map((l) => (
+                  <li key={l}>
+                    <a href={`#${l.toLowerCase().replace(/\s+/g, '')}`} className="font-['Inter'] text-white/40 text-sm hover:text-white/70 transition-colors">
+                      {l}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-['Syne'] font-semibold text-white/70 text-sm uppercase tracking-[0.15em] mb-3">Address</h4>
+              <p className="font-['Inter'] text-white/40 text-sm leading-relaxed">
+                Sr. No. 217, Pashan Sus Road,<br />
+                Near Mumbai-Pune Bypass Highway,<br />
+                Pune, Maharashtra 412115
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-white/10 pt-6 text-center">
+            <p className="font-['Inter'] text-white/30 text-xs">
+              Copyright &copy; 2026 Sunny's World Pune | Powered by Sunny's World Pune
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
-
